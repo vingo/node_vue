@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vue Demo</title>
+    <link rel="icon" href="/static/logo.png" type="image/x-icon">
+    <style type="text/css">
+        /* 必需 */
+        .expand-transition {
+          transition: all .3s ease;
+          height: 30px;
+          padding: 10px;
+          background-color: #eee;
+          overflow: hidden;
+        }
+
+        /* .expand-enter 定义进入的开始状态 */
+        /* .expand-leave 定义离开的结束状态 */
+        .expand-enter, .expand-leave {
+          height: 0;
+          padding: 0 10px;
+          opacity: 0;
+        }
+    </style>
+    <script type="text/javascript" src='/static/vue.js'></script>
+ <script type="text/javascript" src='https://code.jquery.com/jquery-1.12.3.min.js'></script>
+    <script type="text/javascript">
+       // Vue.config.devtools = true
+       // $.getJSON( "/data", function(data) {
+       //           var items = [];
+       //           //console.table(data);
+       //  });
+    </script>
+
+</head>
+<body>
+<div id="example1">hello:{{names}}
+  <p v-if="greeting">Hello this greeting is: <b style="color:red">true</b>!</p>
+  <p>app: {{ message }}</p>
+  <!--只处理单次插值，今后的数据变化就不会再引起插值更新了><-->
+  <p>This will never change: {{* message }}</p>
+  <p>html: {{{* html }}}</p>
+  <input v-model="message">
+
+  <div class="test" v-bind:class="{ 'class-a': isA, 'class-b': isB }">bind class</div>
+  <div class="test" v-bind:class="classObject">bind class object</div>
+  <div :class="[classA, isB ? classA : '']">bind class with Array</div>
+  <div :style="{color:'green','font-size':classA}">bind style</div>
+
+  a={{ a }}, b={{ b }}
+
+  {{@if isA}}
+  <h1 :style="p_style">if condition  isA=true</h1>
+  {{/if}}
+  <h3 v-if="ok" :style="p_style">v-if condition  ok=true</h3>
+  <h3 v-else="no" :style="p_style">v-else condition  no=true</h3>
+  <template v-if="ok" >
+    <div style="color:blue">
+        template v-if condition<br/>
+        <h1>Title</h1>
+        <p>Paragraph 1</p>
+        <p>Paragraph 2</p>
+    </div>
+  </template>
+<!-->
+一般来说，v-if 有更高的切换消耗而 v-show 有更高的初始渲染消耗。因此，如果需要频繁切换 v-show 较好，如果在运行时条件不大可能改变 v-if 较好。
+<-->
+</div>
+
+
+<span>***vue.extend*****</span><p   style="color:red" id='mount-point'></p>
+<div id="list" >
+<span style="color: red">***todos*****</span>
+ <ul>
+ <input v-model="newTodo" v-on:keyup.enter="addTodo" placeholder="edit and add me"><br>
+ <input v-model="query" placeholder="query">
+
+ <li v-for="todo in todos | filterBy query"  track-by="$index">
+      <span>{{ todo.text }}-{{$index}}</span>
+      <button v-on:click="removeTodo($index)">X</button>
+ </li>
+  </ul>
+</div>
+
+<p>>>>>>>>>>>component>>>>>>>>>>>></p>
+<div id="component">
+<my-component   style="color:red"></my-component>
+</div>
+<div id='parents'>
+  <myparents-component></myparents-component>
+</div>
+<div id='parent2'>
+  <my-component2></my-component2>
+</div>
+<div id="demo" v-demo="{color:'white',text:'hello!'}"  v-bind:a="someValue" style="color:red">directive</div>
+<div v-text='abcd|reverse'></div>
+
+  <script type="text/javascript">
+// 这是我们的 Model
+var exampleData = {
+  greeting: true,
+  names: 'Vue.js',
+  a:1,
+  classObject:{
+    isA: true,
+    isB: false
+  },
+  p_style:{
+    color:'red',
+    'font-size':'large'
+  },
+  classA: 'large',
+  isA: true,
+  isB: false,
+  ok:true,
+  no:true,
+  query:'',
+  todos: [
+    ],
+    adds:[],
+  maxid:0,
+  html:'<a href="#" >baidu.com</a>',
+  message: 'Hello Vue.js!',
+  newTodo:''
+};
+// 创建一个 Vue 实例或 "ViewModel",它连接 View 与 Model
+var exampleVM = new Vue({
+  el: '#example1',
+  data: exampleData,
+  computed:{
+     // 一个计算属性的 getter
+    b:{
+      get:function(){
+        return this.a+1;
+      },
+      set:function(newval){
+        this.b=newval
+        return this.b;
+      }
+    }
+  }
+});
+//start
+var child=Vue.extend({template:'<a>this is a child component of list element</a>'});
+//组件只能用在父组件内
+var parents=Vue.extend({
+  template:'<div><p>parents element</p><child-component></child-component></div>',components:{
+  'child-component':child  //只能用在父组件模板内
+  }
+});
+Vue.component('myparents-component', parents);
+new Vue({el:'#parents'});
+//end
+//start 注册语法糖
+  Vue.component('my-component2',{
+    template:'<div>A custom component2!</div>'
+  });
+  var parents2=Vue.extend({
+    components:{
+      'my-component2':{
+          template:'this is a child component'
+      }
+    }
+  });
+  new Vue({el:'#parent2'})
+//end
+new Vue({
+  el: '#list',
+  data: exampleData,
+  created: function () {
+    this.fetchData();
+  },
+  watch: {
+    maxid: 'fetchData'
+  },
+  methods: {
+    reverseMessage: function () {
+      this.message = this.message.split('').reverse().join('')
+    },
+    addTodo: function () {
+      var text = this.newTodo.trim();
+      if (text) {
+        var len=this.todos.length;
+        var obj={id:len, name:'vingo'+len, text: text ,active:'add'}
+        this.todos.push(obj);
+        this.adds.push(obj);
+        this.maxid=len;
+        this.newTodo = '';
+      }
+    },
+    removeTodo: function (index) {
+      var obj=this.todos.splice(index, 1);
+      obj.active='remove';
+      this.adds.push(obj);
+      this.maxid=this.todos.length;
+    },
+    fetchData:function () {
+        var self = this;
+        $.getJSON( "/data", function(data) {
+          var adds=self.adds.filter(item=>{return item.active==='add';});
+          self.todos = data.concat(adds);
+        });
+    }
+  }
+});
+
+//start 创建可复用的组件构造器
+var Profile = Vue.extend({
+  template: '<p>{{firstName}} {{lastName}} alias: {{alias}}</p>'
+});
+// 创建一个 Profile实例
+var profile = new Profile({
+  data: {
+    firstName: 'chaobo',
+    lastName: 'mao',
+    alias: 'Vingo'
+  }
+});
+// 挂载到元素上
+profile.$mount('#mount-point');
+//end
+
+//start
+var Mycom=Vue.extend({template:'<div>a custom component</div>'});
+// 全局注册组件，tag 为 my-component
+Vue.component('my-component', Mycom);
+new Vue({el:'#component'});
+//end
+
+//start directive  指令
+  Vue.directive('demo',{
+    params: ['a','style'],   //声明自定义特性
+    paramWatchers: {
+      a: function(val, oldVal) {
+        console.log('a changed!',val,oldVal);
+      }
+    },
+    bind:function () {
+        console.log('demo bound!')
+    },
+    update:function (value) {
+        console.log('color:',value.color,';text:',value.text) // "white"
+        console.log('this.params: ',JSON.stringify(this.params)) // -> "hi"
+       // 值更新时的工作
+      // 也会以初始值为参数调用一次
+      this.el.innerHTML =
+      'name - '       + this.name + '<br>' +
+      'expression - ' + this.expression + '<br>' +
+      'argument - '   + this.arg + '<br>' +
+      'modifiers - '  + JSON.stringify(this.modifiers) + '<br>'
+       + 'value - '      + JSON.stringify(value)
+    }
+  });
+ new Vue({
+  el: '#demo',
+  data: {
+    msg: 'hello directive!'
+  }
+})
+//end
+
+//start filter
+Vue.filter('reverse', function (value) {
+  return value.split('').reverse().join('');
+});
+Vue.filter('currencyDisplay', {
+  // model -> view
+  // 在更新 `<input>` 元素之前格式化值
+  read: function(val) {
+    return '$'+val.toFixed(2)
+  },
+  // view -> model
+  // 在写回数据之前格式化值
+  write: function(val, oldVal) {
+    var number = +val.replace(/[^\d.]/g, '')
+    return isNaN(number) ? 0 : parseFloat(number.toFixed(2))
+  }
+});
+//end
+</script>
+</body>
+</html>

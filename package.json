@@ -1,0 +1,11 @@
+{
+    "name": "VUE.js Demo",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "node": "^4.2.1",
+        "ejs": "^2.4.1",
+        "debug": "~2.1.1",
+        "express": "^4.13.4"
+    }
+}
