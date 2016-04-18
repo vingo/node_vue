@@ -2,6 +2,7 @@
 use vue.js addon to test in node
 
 test steps
+
 1. npm install   #install packages
 
 
